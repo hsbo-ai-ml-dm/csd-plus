@@ -1,0 +1,17 @@
+# Core
+numpy>=1.24
+scipy>=1.10
+torch>=2.0
+torchvision>=0.15
+Pillow>=10.0
+
+# CSD checkpoint loading (huggingface_hub) and the model architecture
+transformers>=4.40
+huggingface_hub>=0.22
+safetensors>=0.4
+
+# Demo: Wikimedia fetcher
+requests>=2.31
+
+# Optional: plotting in the demo
+matplotlib>=3.7

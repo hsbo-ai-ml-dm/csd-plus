@@ -1,0 +1,29 @@
+# Local build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# LaTeX intermediates
+paper/*.aux
+paper/*.log
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.toc
+paper/*.synctex.gz
+
+# Embeddings / large data — provided as Release assets, not in repo
+data/embeddings/*.npz
+data/cache/
+
+# Local secrets / api configs
+.env
+*.local
+
+# OS junk
+.DS_Store
+Thumbs.db
