@@ -1,0 +1,61 @@
+---
+---
+
+@import "jekyll-theme-cayman";
+
+// Hochschule Bochum corporate red
+$bo-red: #E2001A;
+$bo-red-dark: #A60014;
+$bo-red-soft: rgba(226, 0, 26, 0.08);
+
+.page-header {
+  background-color: $bo-red;
+  background-image: linear-gradient(120deg, $bo-red-dark, $bo-red);
+}
+
+.project-name { color: #ffffff; }
+.project-tagline { color: rgba(255, 255, 255, 0.85); }
+
+a {
+  color: $bo-red;
+  &:hover { color: $bo-red-dark; }
+}
+
+.main-content {
+  h1, h2, h3, h4, h5, h6 { color: $bo-red-dark; }
+
+  blockquote {
+    border-left-color: $bo-red;
+    color: #555;
+  }
+
+  table th {
+    color: #ffffff;
+    background-color: $bo-red-dark;
+    border-color: $bo-red-dark;
+  }
+  table tr:nth-child(even) { background-color: $bo-red-soft; }
+
+  pre {
+    border-color: rgba(226, 0, 26, 0.18);
+  }
+  code {
+    color: $bo-red-dark;
+    background-color: $bo-red-soft;
+  }
+  pre code {
+    color: inherit;
+    background-color: transparent;
+  }
+}
+
+.btn {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.08);
+  &:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #ffffff;
+  }
+}
