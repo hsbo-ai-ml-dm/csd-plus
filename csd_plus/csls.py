@@ -26,12 +26,39 @@ def _l2_normalize(X: np.ndarray) -> np.ndarray:
     return X / np.clip(norms, 1e-12, None)
 
 
-def csls_pairwise_matrix(X: np.ndarray, k: int = 15) -> np.ndarray:
+def csls_pairwise_matrix(
+    X: np.ndarray,
+    k: int = 15,
+    y: np.ndarray | Sequence[int] | None = None,
+    exclude_class: bool = False,
+    balance_pool: bool = False,
+    seed: int = 0,
+) -> np.ndarray:
     """Compute the pairwise CSLS matrix on a single embedding pool.
+
+    The density term r_k(x) is the mean cosine to x's k nearest reference
+    neighbours. Only x itself is excluded by default, so when the reference
+    pool is the evaluation corpus the neighbourhood can contain other works
+    by x's own artist. It typically does: on a corpus with ~19 works per
+    artist and k=15, roughly 40 percent of a work's nearest neighbours share
+    its artist, and r_k(x) then measures within-artist cohesion as well as
+    cross-artist local density. Keep that in mind when interpreting a
+    reduction in negative gaps as hubness removal.
+
+    ``exclude_class`` drops works by the query's own artist from its density
+    term, which isolates the cross-artist component; ``balance_pool``
+    additionally subsamples the reference pool to an equal number of works
+    per artist, removing pool-size effects. Both need ``y`` and both need the
+    query's label, so they are instruments for decomposing the effect rather
+    than readouts you can apply to an unlabelled query.
 
     Args:
         X: (n, d) embeddings.
         k: number of neighbours for the local-density estimator.
+        y: (n,) artist labels; required if exclude_class or balance_pool.
+        exclude_class: remove same-artist works from each density term.
+        balance_pool: additionally equalise works per artist in the pool.
+        seed: subsampling seed for balance_pool.
 
     Returns:
         (n, n) CSLS matrix C with C[i, j] = 2*cos(x_i, x_j) - r_k(x_i) - r_k(x_j).
@@ -40,14 +67,29 @@ def csls_pairwise_matrix(X: np.ndarray, k: int = 15) -> np.ndarray:
     X = _l2_normalize(np.asarray(X, dtype=np.float32))
     cos = X @ X.T
     n = cos.shape[0]
-    # r_k(x) = mean cosine to top-k neighbours, excluding self.
     eff_k = min(k, n - 1)
     if eff_k <= 0:
         raise ValueError(f"need at least 2 points for CSLS, got n={n}")
-    # mask self by setting diagonal very low temporarily
+    if (exclude_class or balance_pool) and y is None:
+        raise ValueError("exclude_class and balance_pool require y")
+
+    # Reference mask for the density term: self is always excluded.
     cos_off = cos.copy()
     np.fill_diagonal(cos_off, -np.inf)
-    # top-k along each row
+    if exclude_class or balance_pool:
+        y = np.asarray(y)
+        for c in np.unique(y):
+            ic = np.where(y == c)[0]
+            cos_off[np.ix_(ic, ic)] = -np.inf
+    if balance_pool:
+        rng = np.random.default_rng(seed)
+        per = [np.where(y == c)[0] for c in np.unique(y)]
+        m = min(len(i) for i in per)
+        ref = np.concatenate([rng.permutation(i)[:m] for i in per])
+        masked = np.full_like(cos_off, -np.inf)
+        masked[:, ref] = cos_off[:, ref]
+        cos_off = masked
+
     topk = -np.partition(-cos_off, eff_k - 1, axis=1)[:, :eff_k]
     r = topk.mean(axis=1)
     csls = 2.0 * cos - r[:, None] - r[None, :]
@@ -77,6 +119,9 @@ def csls_readout(
     y: np.ndarray | Sequence[int],
     k: int = 15,
     names: Sequence[str] | None = None,
+    exclude_class: bool = False,
+    balance_pool: bool = False,
+    seed: int = 0,
 ) -> list[dict]:
     """Per-artist CSLS-corrected within / cross / gap statistics.
 
@@ -86,7 +131,8 @@ def csls_readout(
     """
     X = np.asarray(X, dtype=np.float32)
     y = np.asarray(y)
-    C = csls_pairwise_matrix(X, k=k)
+    C = csls_pairwise_matrix(X, k=k, y=y, exclude_class=exclude_class,
+                             balance_pool=balance_pool, seed=seed)
 
     by_artist = _per_artist_indices(y)
     artist_ids = sorted(by_artist.keys())

@@ -50,6 +50,22 @@ ArtBench-10), and the verification gain concentrates in the
 within-tradition pair regime the diagnostic flags (+0.019 to +0.054 AUC
 across four backbones) rather than on randomly drawn pairs.
 
+### What the CSLS density term corrects for
+
+`r_k(x)` is the mean cosine to `x`'s k nearest reference neighbours, and only
+`x` itself is excluded. When the reference pool is the evaluation corpus, the
+neighbourhood therefore also holds other works by `x`'s own artist — at
+k = 15 and ~19 works per artist, about 40 percent of them. `r_k(x)` then
+normalises within-artist cohesion as well as cross-artist local density, and
+roughly half of the reduction from 12 to 4 negative gaps comes from the
+former. Passing `exclude_class=True` isolates the cross-artist component and
+leaves 9 of 89; adding `balance_pool=True` gives 8 of 89. Both need the
+query's artist label, so they decompose the effect rather than replace the
+readout: in a real query the artist is what you are trying to establish. In
+the paper's inductive verification protocol the reference gallery holds only
+training artists, so the same-artist share is zero and the reported AUC gains
+are purely cross-artist.
+
 ## Practical implication
 
 Before reporting CSD cosine as an absolute style-fidelity score for a

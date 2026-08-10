@@ -10,6 +10,12 @@ Public API:
 
     csls_readout(X, y, k=15) -> DataFrame
         Same per-artist statistics under CSLS-corrected pairwise cosines.
+        The density term r_k(x) excludes only x itself, so when the reference
+        pool is the evaluation corpus it also contains other works by x's own
+        artist and measures within-artist cohesion alongside cross-artist
+        local density. Pass exclude_class=True (optionally balance_pool=True)
+        to isolate the cross-artist component; both need the query label and
+        are decomposition instruments rather than readouts.
 
     bootstrap_gap_ci(X, y, n_resamples=1000, seed=0) -> DataFrame
         Per-artist bootstrap 95% confidence intervals on the gap.
