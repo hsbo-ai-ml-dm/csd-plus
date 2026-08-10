@@ -50,6 +50,29 @@ ArtBench-10), and the verification gain concentrates in the
 within-tradition pair regime the diagnostic flags (+0.019 to +0.054 AUC
 across four backbones) rather than on randomly drawn pairs.
 
+### Which call reproduces which number
+
+The paper reports two regimes and they give different counts, so pick the one
+the figure you are checking uses.
+
+| paper | count | call |
+|---|---|---|
+| pairwise, raw cosine | 20 / 89 | `discrimination_gap` |
+| pairwise, CSLS | 8 / 89 | `csls_readout` |
+| aggregated, raw cosine | 12 / 89 | `aggregated_gap(readout='cosine')` |
+| aggregated, CSLS | 4 / 89 | `aggregated_gap(readout='csls')` |
+| aggregated, class-excluded | 9 / 89 | `aggregated_gap(readout='csls', exclude_class=True)` |
+
+The headline numbers quoted above and in the abstract are **aggregated**: each
+work is scored against an artist's whole anchor pool, which is what a
+style-fidelity evaluation actually does. The pairwise regime compares
+individual pairs and flags more artists on the same corpus.
+
+The pair-verification harness of the paper (artist-disjoint splits, pair
+sampling, the inductive CSLS reference gallery, the pair-feature logistic
+regression) is not part of this library — it is evaluation scaffolding rather
+than a metric, and it ships with the paper's supplementary material.
+
 ### Input resolution
 
 `CSDBackbone.embed(image, input_size=...)` runs the checkpoint above its

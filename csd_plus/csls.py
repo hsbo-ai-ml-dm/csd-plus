@@ -67,13 +67,33 @@ def csls_pairwise_matrix(
     X = _l2_normalize(np.asarray(X, dtype=np.float32))
     cos = X @ X.T
     n = cos.shape[0]
+    r = _local_density(cos, y, k=k, exclude_class=exclude_class,
+                       balance_pool=balance_pool, seed=seed)
+    return 2.0 * cos - r[:, None] - r[None, :]
+
+
+def _local_density(
+    cos: np.ndarray,
+    y: np.ndarray | Sequence[int] | None = None,
+    k: int = 15,
+    exclude_class: bool = False,
+    balance_pool: bool = False,
+    seed: int = 0,
+) -> np.ndarray:
+    """r_k(x): mean cosine to x's k nearest reference neighbours.
+
+    Shared by the pairwise and aggregated readouts so both correct for
+    density in exactly the same way. The query itself is always excluded;
+    ``exclude_class`` additionally removes works by the query's own artist
+    and ``balance_pool`` equalises works per artist in the reference pool.
+    """
+    n = cos.shape[0]
     eff_k = min(k, n - 1)
     if eff_k <= 0:
         raise ValueError(f"need at least 2 points for CSLS, got n={n}")
     if (exclude_class or balance_pool) and y is None:
         raise ValueError("exclude_class and balance_pool require y")
 
-    # Reference mask for the density term: self is always excluded.
     cos_off = cos.copy()
     np.fill_diagonal(cos_off, -np.inf)
     if exclude_class or balance_pool:
@@ -91,9 +111,7 @@ def csls_pairwise_matrix(
         cos_off = masked
 
     topk = -np.partition(-cos_off, eff_k - 1, axis=1)[:, :eff_k]
-    r = topk.mean(axis=1)
-    csls = 2.0 * cos - r[:, None] - r[None, :]
-    return csls
+    return topk.mean(axis=1)
 
 
 def _per_artist_indices(y: np.ndarray) -> dict[int, np.ndarray]:
