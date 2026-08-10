@@ -50,6 +50,22 @@ ArtBench-10), and the verification gain concentrates in the
 within-tradition pair regime the diagnostic flags (+0.019 to +0.054 AUC
 across four backbones) rather than on randomly drawn pairs.
 
+### Input resolution
+
+`CSDBackbone.embed(image, input_size=...)` runs the checkpoint above its
+training resolution by resampling the positional embeddings to the patch grid
+the input implies, which is the *pos-interp* variant of the paper. Any
+multiple of the patch size 14 is accepted; 336 is what the paper reports and
+280 performs on par with it at two thirds of the cost. Which of the two leads
+depends on the readout — 280 under CSLS, 336 under raw cosine, both by about
+0.001 AUC — so there is no optimum to chase between them. Beyond 336 the grid
+is far enough from its trained 16x16 size that every measure degrades.
+
+A larger input does **not** widen the field of view: the preprocessing
+resizes the shortest side and takes a square centre crop, so the visible
+fraction of the artwork is the same at every input size. Only the sampling
+density changes.
+
 ### What the CSLS density term corrects for
 
 `r_k(x)` is the mean cosine to `x`'s k nearest reference neighbours, and only

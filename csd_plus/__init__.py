@@ -22,7 +22,13 @@ Public API:
 
     CSDBackbone
         Thin wrapper around the CSD ViT-L/14 checkpoint of Somepalli et al.
-        Provides .embed(image) -> np.ndarray (768,) on a CUDA or CPU device.
+        Provides .embed(image, input_size=224) -> np.ndarray (768,) on a CUDA
+        or CPU device. input_size=336 gives the pos-interp variant of the
+        paper: the positional embeddings are resampled to the 24x24 patch grid
+        for the duration of the call. Any multiple of the patch size 14 works;
+        280 performs on par with 336 at two thirds of the cost. A larger input
+        samples the same centre crop more finely and does not widen the field
+        of view.
 
 Typical use on a third-party corpus is six lines:
 
