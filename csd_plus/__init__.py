@@ -11,7 +11,7 @@ Public API:
     csls_readout(X, y, k=15) -> DataFrame
         Same per-artist statistics under CSLS-corrected pairwise cosines.
 
-    bootstrap_gap_ci(X, y, n_resamples=100, seed=0) -> DataFrame
+    bootstrap_gap_ci(X, y, n_resamples=1000, seed=0) -> DataFrame
         Per-artist bootstrap 95% confidence intervals on the gap.
 
     CSDBackbone
