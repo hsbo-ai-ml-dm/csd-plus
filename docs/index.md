@@ -36,22 +36,27 @@ tradition. We give:
 We call the diagnostic-driven readout protocol on the frozen backbone
 *CSD+*. CSD+ is **not a new encoder**.
 
-## Headline numbers (corpus: 1799 artworks, 91 artists)
+## Headline numbers (corpus: 1645 artworks, 89 artists)
 
 | Setting | Negative-gap artists (aggregated-pool) | Pair-verification AUC |
 |---|---|---|
-| Raw CSD cosine | 15 / 91 | 0.883 |
-| CSLS readout (k = 15) | 4 / 91 | — |
-| CSLS + pos-interp 336 | — | **0.905** |
+| Raw CSD cosine | 12 / 89 | 0.891 |
+| CSLS readout (k = 15) | 4 / 89 | 0.905 |
+| CSLS + pos-interp 336 | — | **0.911** |
 
-Across 25 artist-disjoint splits.
+Across 25 artist-disjoint splits. The count reduction replicates on two
+corpora we did not build (10 → 3 on the WikiArt dump, 479 → 298 on
+ArtBench-10), and the verification gain concentrates in the
+within-tradition pair regime the diagnostic flags (+0.019 to +0.054 AUC
+across four backbones) rather than on randomly drawn pairs.
 
 ## Practical implication
 
 Before reporting CSD cosine as an absolute style-fidelity score for a
 text-to-image evaluation, run the diagnostic on the candidate corpus. If a
 non-trivial fraction of artists exhibit negative gaps, CSLS is the
-minimal correction; otherwise raw cosine is safe to read absolutely.
+minimal correction. A positive gap means the necessary median-order
+condition holds; it is not by itself a certificate of calibration.
 
 ## Reference implementation
 
