@@ -48,6 +48,17 @@ Public API:
     bootstrap_gap_ci(X, y, n_resamples=1000, seed=0) -> list[dict]
         Per-artist bootstrap 95% confidence intervals on the gap.
 
+    negative_rate_at(X, y, n_artists=None, works_per_artist=None) -> dict
+        The negative-gap rate at a stated artist count and anchor depth. Use
+        this rather than a bare count whenever a rate is to be compared with
+        another corpus: the cross term is a maximum over competitors, so the
+        rate grows with the artist count by arithmetic, and it is separately
+        inflated by thin per-artist sampling because that maximum runs over
+        noisy medians. Neither effect is representational. Two rates measured
+        at different configurations say nothing about each other, and the
+        configuration that inflates the rate most, anchor pools of ten to
+        twenty works, is the one style-fidelity evaluation actually uses.
+
     CSDBackbone
         Thin wrapper around the CSD ViT-L/14 checkpoint of Somepalli et al.
         Provides .embed(image, input_size=224) -> np.ndarray (768,) on a CUDA
@@ -70,15 +81,17 @@ Typical use on a third-party corpus is six lines:
 from .diagnostic import discrimination_gap, bootstrap_gap_ci
 from .csls import csls_readout, csls_pairwise_matrix
 from .aggregated import aggregated_gap
+from .inventory import negative_rate_at
 from .csd_backbone import CSDBackbone
 
 __all__ = [
     "discrimination_gap",
     "aggregated_gap",
     "bootstrap_gap_ci",
+    "negative_rate_at",
     "csls_readout",
     "csls_pairwise_matrix",
     "CSDBackbone",
 ]
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"

@@ -105,13 +105,55 @@ the paper's inductive verification protocol the reference gallery holds only
 training artists, so the same-artist share is zero and the reported AUC gains
 are purely cross-artist.
 
+### Why a rate needs its configuration attached
+
+Do not compare a negative-gap rate with one from another corpus unless both
+were measured at the same artist count and the same number of works per
+artist. Two effects make a bare rate incomparable, and neither has anything to
+do with how good the embedding is.
+
+The cross term is a maximum over competitors. For a fixed artist,
+`P(c_k > w_k)` is the probability that a maximum over `K-1` competitors clears
+one fixed threshold, so it grows with the artist count `K` whatever the
+competitors look like. Holding a corpus fixed and letting the maximum run over
+random subsets of its own artists shows the size of it: on the WikiArt dump the
+rate goes 4.5 % at 32 artists, 10.9 % at 89, 14.8 % at all 128, and on
+ArtBench-10 it continues to 39.4 % at 1639. The gap between ArtBench's 39.4 %
+and our 22.5 % is mostly this.
+
+Both terms are medians over pairs, and thin per-artist sampling makes both
+noisier — but not alike. The within term is one median; the cross term is a
+maximum over `K-1` of them, and a maximum over noisy estimates is biased
+upward. At a fixed 89 artists, WikiArt reads 27.5 % with ten works per artist,
+19.3 % with 19 and 11.9 % with all of them. The inflating end is the end that
+style-fidelity evaluation actually operates at, since anchor pools there hold
+tens of works rather than hundreds.
+
+Match both and the three corpora agree to within a few points: 25.4 %, 27.5 %
+and 19.4 % at 89 artists with ten works each. `negative_rate_at` computes a
+rate at a configuration you state:
+
+```python
+from csd_plus import negative_rate_at
+
+negative_rate_at(X, y)                                    # your corpus as it is
+negative_rate_at(X, y, n_artists=89, works_per_artist=10) # comparable to the above
+```
+
+What does survive both controls is how densely traditions are sampled. At a
+constant artist count, constant anchor depth and inside one corpus, drawing
+artists from a single style class rather than ten moves the rate from 29.9 % to
+16.4 %. That is the property you control when assembling an evaluation pool.
+
 ## Practical implication
 
 Before reporting CSD cosine as an absolute style-fidelity score for a
-text-to-image evaluation, run the diagnostic on the candidate corpus. If a
-non-trivial fraction of artists exhibit negative gaps, CSLS is the
-minimal correction. A positive gap means the necessary median-order
-condition holds; it is not by itself a certificate of calibration.
+text-to-image evaluation, run the diagnostic on the candidate corpus. No
+published rate transfers to it, for the reasons above, so this step cannot be
+skipped by citing one. If a non-trivial fraction of artists exhibit negative
+gaps, CSLS is the minimal correction. A positive gap means the necessary
+median-order condition holds; it is not by itself a certificate of
+calibration.
 
 ## Reference implementation
 
